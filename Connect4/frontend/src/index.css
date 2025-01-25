@@ -1,0 +1,253 @@
+/* Base styles */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Layout */
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #1e3a8a, #7e22ce);
+  color: white;
+  padding: 1rem;
+}
+
+.container {
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.game-title {
+  font-size: 2.25rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.button-blue {
+  background-color: #2563eb;
+}
+
+.button-blue:hover {
+  background-color: #1d4ed8;
+}
+
+.button-purple {
+  background-color: #9333ea;
+}
+
+.button-purple:hover {
+  background-color: #7e22ce;
+}
+
+/* Game Setup */
+.setup-container {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.setup-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.setup-section {
+  margin-bottom: 1.5rem;
+}
+
+.setup-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.setup-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.setup-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 640px) {
+  .setup-grid-2,
+  .setup-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.setup-button {
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: white;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.setup-button:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.setup-button.active {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.setup-button.active-purple {
+  border-color: #9333ea;
+  background-color: rgba(147, 51, 234, 0.2);
+}
+
+.setup-button.active-green {
+  border-color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.2);
+}
+
+/* Game Board */
+.game-board {
+  background-color: #1e40af;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(40px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: none;
+  transition: all 0.2s;
+  position: relative;
+  cursor: pointer;
+}
+
+.cell-empty {
+  background-color: #1e3a8a;
+}
+
+.cell-empty:hover {
+  background-color: #2563eb;
+}
+
+.cell-disabled {
+  background-color: #1e3a8a;
+  cursor: not-allowed;
+}
+
+.cell-player1 {
+  background-color: #ef4444;
+}
+
+.cell-player2 {
+  background-color: #eab308;
+}
+.cell-winning {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+/* Game Status */
+.game-status {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.player-indicator {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+}
+
+.player1-color {
+  background-color: #ef4444;
+}
+
+.player2-color {
+  background-color: #eab308;
+}
+
+.game-result {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+/* Animations */
+@keyframes dropIn {
+  from {
+    transform: translateY(-100%) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-drop {
+  animation: dropIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
