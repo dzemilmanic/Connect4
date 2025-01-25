@@ -81,9 +81,9 @@ The React app will be available at `http://localhost:5173`, and the Django backe
 
 ### Game
 
-- **POST /api/game/start/**: Start a new game.
-- **POST /api/game/move/**: Make a move.
-- **GET /api/game/state/**: Retrieve the current game state.
+- **POST /api/algorithms/start/**: Start a new game.
+- **POST /api/algorithms/move/**: Make a move.
+- **GET /api/algorithms/state/**: Retrieve the current game state.
 
 ## Future Improvements
 
