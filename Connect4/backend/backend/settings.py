@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-!tz@q2^_fvifv7g%3j&bt3+_&)yj(j60zy9t6n28t(uc&)l3s*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['desirable-nourishment-production.up.railway.app','connect4-game.up.railway.app']
 
 
 # Application definition
@@ -130,7 +130,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "http://127.0.0.1:5500"
+    "http://127.0.0.1:5500",
+    "https://connect4-game.up.railway.app",
+    "https://desirable-nourishment-production.up.railway.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
