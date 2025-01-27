@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, RefreshCw, User, Cpu } from 'lucide-react';
-import GameSetup from './components/GameSetup';
-import GameBoard from './components/GameBoard';
+import React, { useState, useEffect } from "react";
+import { Settings, RefreshCw, User, Cpu } from "lucide-react";
+import GameSetup from "./components/GameSetup";
+import GameBoard from "./components/GameBoard";
 
 const INITIAL_GAME_STATE = {
   id: null,
@@ -22,21 +22,24 @@ function App() {
   const [isSetupOpen, setIsSetupOpen] = useState(true);
 
   useEffect(() => {
-    if (gameState.game_type === 'computer-computer' && !gameState.is_finished) {
+    if (gameState.game_type === "computer-computer" && !gameState.is_finished) {
       const timer = setTimeout(() => {
         makeComputerMove();
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [gameState]);
- 
+
   const startNewGame = async (settings) => {
     try {
-      const response = await fetch('http://localhost:8000/api/algorithms/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      });
+      const response = await fetch(
+        "https://desirable-nourishment-production.up.railway.app/api/algorithms/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(settings),
+        }
+      );
       const data = await response.json();
       setGameState({
         ...INITIAL_GAME_STATE,
@@ -46,7 +49,7 @@ function App() {
       });
       setIsSetupOpen(false);
     } catch (error) {
-      console.error('Error starting game:', error);
+      console.error("Error starting game:", error);
     }
   };
 
@@ -55,26 +58,29 @@ function App() {
 
     const startTime = Date.now();
     try {
-      const response = await fetch(`http://localhost:8000/api/algorithms/${gameState.id}/make_move/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          column: null,
-          algorithm: gameState.algorithm,
-          difficulty: gameState.difficulty,
-        }),
-      });
+      const response = await fetch(
+        `https://desirable-nourishment-production.up.railway.app/api/algorithms/${gameState.id}/make_move/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            column: null,
+            algorithm: gameState.algorithm,
+            difficulty: gameState.difficulty,
+          }),
+        }
+      );
       const data = await response.json();
       const endTime = Date.now();
-      
-      setGameState(prev => ({
+
+      setGameState((prev) => ({
         ...prev,
         ...data,
         lastMoveTime: endTime,
         moveCalculationTime: endTime - startTime,
       }));
     } catch (error) {
-      console.error('Error making move:', error);
+      console.error("Error making move:", error);
     }
   };
 
@@ -83,26 +89,29 @@ function App() {
 
     const startTime = Date.now();
     try {
-      const response = await fetch(`http://localhost:8000/api/algorithms/${gameState.id}/make_move/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          column,
-          algorithm: gameState.algorithm,
-          difficulty: gameState.difficulty,
-        }),
-      });
+      const response = await fetch(
+        `https://desirable-nourishment-production.up.railway.app/api/algorithms/${gameState.id}/make_move/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            column,
+            algorithm: gameState.algorithm,
+            difficulty: gameState.difficulty,
+          }),
+        }
+      );
       const data = await response.json();
       const endTime = Date.now();
-      
-      setGameState(prev => ({
+
+      setGameState((prev) => ({
         ...prev,
         ...data,
         lastMoveTime: endTime,
         moveCalculationTime: endTime - startTime,
       }));
     } catch (error) {
-      console.error('Error making move:', error);
+      console.error("Error making move:", error);
     }
   };
 
@@ -117,7 +126,6 @@ function App() {
         <header className="header">
           <h1 className="game-title">Connect Four</h1>
           <div className="header-buttons">
-            
             <button onClick={resetGame} className="button button-purple">
               <RefreshCw size={20} />
               New Game
@@ -130,27 +138,53 @@ function App() {
         ) : (
           <div>
             <div className="game-status">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div className={`player-indicator ${gameState.current_player === 1 ? 'player1-color' : 'player2-color'}`} />
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "1rem" }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <div
+                    className={`player-indicator ${
+                      gameState.current_player === 1
+                        ? "player1-color"
+                        : "player2-color"
+                    }`}
+                  />
                   <span style={{ fontWeight: 600 }}>
                     Player {gameState.current_player}'s Turn
                   </span>
                 </div>
-                {gameState.game_type !== 'human-human' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem' }}>
-                      Player 1: {gameState.game_type === 'human-computer' ? <User size={16} style={{ display: 'inline' }} /> : <Cpu size={16} style={{ display: 'inline' }} />}
+                {gameState.game_type !== "human-human" && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span style={{ fontSize: "0.875rem" }}>
+                      Player 1:{" "}
+                      {gameState.game_type === "human-computer" ? (
+                        <User size={16} style={{ display: "inline" }} />
+                      ) : (
+                        <Cpu size={16} style={{ display: "inline" }} />
+                      )}
                     </span>
-                    <span style={{ fontSize: '0.875rem' }}>
-                      Player 2: <Cpu size={16} style={{ display: 'inline' }} />
+                    <span style={{ fontSize: "0.875rem" }}>
+                      Player 2: <Cpu size={16} style={{ display: "inline" }} />
                     </span>
                   </div>
                 )}
               </div>
               {gameState.moveCalculationTime > 0 && (
-                <div style={{ fontSize: '0.875rem' }}>
-                  Move calculation time: {(gameState.moveCalculationTime / 1000).toFixed(2)}s
+                <div style={{ fontSize: "0.875rem" }}>
+                  Move calculation time:{" "}
+                  {(gameState.moveCalculationTime / 1000).toFixed(2)}s
                 </div>
               )}
             </div>
