@@ -44,8 +44,9 @@ body {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
-  font-weight: 600;
+  font-weight: 900;
   transition: background-color 0.2s;
+  height: 50px;
   border: none;
   color: white;
   cursor: pointer;
