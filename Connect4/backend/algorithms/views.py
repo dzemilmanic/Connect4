@@ -21,7 +21,9 @@ class GameViewSet(viewsets.ModelViewSet):
 
             # Apply initial moves if provided
             initial_moves = request.data.get('initial_moves', [])
-            if initial_moves:
+            from_file = request.data.get('from_file', False)
+            
+            if initial_moves and from_file:
                 for move in initial_moves:
                     if not self.is_valid_move(game.board_state, move):
                         game.delete()
@@ -29,12 +31,13 @@ class GameViewSet(viewsets.ModelViewSet):
                             {"error": f"Invalid move {move} in initial moves"},
                             status=status.HTTP_400_BAD_REQUEST
                         )
+                    # Apply move without triggering computer response
                     self.apply_move(game, move, from_file=True)
                     if game.is_finished:
                         break
 
             # Only make first computer move if no initial moves were provided and not from file
-            elif game.game_type == 'computer-computer' and not request.data.get('from_file', False):
+            elif game.game_type == 'computer-computer' and not from_file:
                 algorithm = request.data.get('algorithm', 'minimax')
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
@@ -72,10 +75,10 @@ class GameViewSet(viewsets.ModelViewSet):
             if not self.is_valid_move(game.board_state, column):
                 return Response({"error": "Invalid move"}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Apply the move (either human's move or move from file)
+            # Apply human move
             self.apply_move(game, column, from_file=from_file)
             
-            # Only make computer move if not reading from file and not skipping computer moves
+            # Only make computer move if not from file and not skipping computer moves
             if not game.is_finished and not from_file and not skip_computer_move:
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
@@ -108,7 +111,7 @@ class GameViewSet(viewsets.ModelViewSet):
 
     def apply_move(self, game, column, from_file=False):
         board = game.board_state
-        current_player = game.current_player  # Store current player before making move
+        current_player = game.current_player
         
         for row in range(5, -1, -1):
             if board[row][column] == 0:
