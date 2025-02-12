@@ -47,54 +47,20 @@ function App() {
         let currentState = data;
         for (let i = 0; i < settings.initial_moves.length; i++) {
           const column = settings.initial_moves[i];
-          const isComputerMove = settings.game_type === 'human-computer' && i % 2 === 1;
-          
-          if (isComputerMove) {
-            // Get computer's move
-            const bestMoveResponse = await fetch(
-              `https://desirable-nourishment-production.up.railway.app/api/algorithms/${currentState.id}/get_best_move/`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  algorithm: settings.algorithm,
-                  difficulty: settings.difficulty,
-                }),
-              }
-            );
-            const bestMoveData = await bestMoveResponse.json();
-            
-            // Make the computer's move
-            const moveResponse = await fetch(
-              `https://desirable-nourishment-production.up.railway.app/api/algorithms/${currentState.id}/make_move/`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  column: bestMoveData.best_move,
-                  algorithm: settings.algorithm,
-                  difficulty: settings.difficulty,
-                }),
-              }
-            );
-            currentState = await moveResponse.json();
-          } else {
-            // Make the player's move from file
-            const moveResponse = await fetch(
-              `https://desirable-nourishment-production.up.railway.app/api/algorithms/${currentState.id}/make_move/`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  column,
-                  algorithm: settings.algorithm,
-                  difficulty: settings.difficulty,
-                }),
-              }
-            );
-            currentState = await moveResponse.json();
-          }
-          
+          const moveResponse = await fetch(
+            `https://desirable-nourishment-production.up.railway.app/api/algorithms/${currentState.id}/make_move/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                column,
+                algorithm: settings.algorithm,
+                difficulty: settings.difficulty,
+                is_from_file: true, // Označava da je potez iz fajla
+              }),
+            }
+          );
+          currentState = await moveResponse.json();
           if (currentState.is_finished) break;
         }
         setGameState({
