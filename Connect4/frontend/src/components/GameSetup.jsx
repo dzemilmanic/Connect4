@@ -31,6 +31,7 @@ function GameSetup({ onStart }) {
       ...(initialMoves && {
         initial_moves: initialMoves,
       }),
+      from_file: initialMoves !== null, // Add this flag to indicate file loading
     };
     onStart(settings);
   };

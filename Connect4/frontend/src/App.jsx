@@ -15,6 +15,7 @@ const INITIAL_GAME_STATE = {
   winning_cells: [],
   lastMoveTime: null,
   moveCalculationTime: 0,
+  from_file: false, // Add this flag
 };
 
 function App() {
@@ -22,7 +23,8 @@ function App() {
   const [isSetupOpen, setIsSetupOpen] = useState(true);
 
   useEffect(() => {
-    if (gameState.game_type === "computer-computer" && !gameState.is_finished) {
+    // Only trigger computer moves if the game is not loaded from a file
+    if (gameState.game_type === "computer-computer" && !gameState.is_finished && !gameState.from_file) {
       const timer = setTimeout(() => {
         makeComputerMove();
       }, 1000);
@@ -56,7 +58,7 @@ function App() {
                 column,
                 algorithm: settings.algorithm,
                 difficulty: settings.difficulty,
-                is_from_file: true, // Označava da je potez iz fajla
+                is_from_file: true,
               }),
             }
           );
@@ -67,6 +69,7 @@ function App() {
           ...currentState,
           ...settings,
           lastMoveTime: Date.now(),
+          from_file: settings.from_file,
         });
       } else {
         setGameState({
@@ -74,6 +77,7 @@ function App() {
           ...data,
           ...settings,
           lastMoveTime: Date.now(),
+          from_file: settings.from_file,
         });
       }
       setIsSetupOpen(false);
@@ -83,7 +87,7 @@ function App() {
   };
 
   const makeComputerMove = async () => {
-    if (!gameState.id || gameState.is_finished) return;
+    if (!gameState.id || gameState.is_finished || gameState.from_file) return;
 
     const startTime = Date.now();
     try {
@@ -139,6 +143,11 @@ function App() {
         lastMoveTime: endTime,
         moveCalculationTime: endTime - startTime,
       }));
+
+      // Only make computer move if not from file
+      if (gameState.game_type === 'human-computer' && !gameState.from_file && !data.is_finished) {
+        await makeComputerMove();
+      }
     } catch (error) {
       console.error("Error making move:", error);
     }
@@ -210,7 +219,7 @@ function App() {
                   </div>
                 )}
               </div>
-              {gameState.moveCalculationTime > 0 && (
+              {gameState.moveCalculationTime > 0 && !gameState.from_file && (
                 <div style={{ fontSize: "0.875rem" }}>
                   Move calculation time:{" "}
                   {(gameState.moveCalculationTime / 1000).toFixed(2)}s
