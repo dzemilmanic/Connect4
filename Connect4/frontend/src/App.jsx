@@ -45,14 +45,17 @@ function App() {
       // If there are initial moves, apply them sequentially
       if (settings.initial_moves && settings.initial_moves.length > 0) {
         let currentState = data;
-        for (const column of settings.initial_moves) {
+        for (let i = 0; i < settings.initial_moves.length; i++) {
+          const column = settings.initial_moves[i];
+          const isComputerMove = settings.game_type === 'human-computer' && i % 2 === 1;
+          
           const moveResponse = await fetch(
             `https://desirable-nourishment-production.up.railway.app/api/algorithms/${currentState.id}/make_move/`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                column,
+                column: isComputerMove ? null : column,
                 algorithm: settings.algorithm,
                 difficulty: settings.difficulty,
               }),
