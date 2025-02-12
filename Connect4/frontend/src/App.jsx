@@ -15,7 +15,7 @@ const INITIAL_GAME_STATE = {
   winning_cells: [],
   lastMoveTime: null,
   moveCalculationTime: 0,
-  from_file: false, // Add this flag
+  from_file: false,
 };
 
 function App() {
@@ -23,7 +23,6 @@ function App() {
   const [isSetupOpen, setIsSetupOpen] = useState(true);
 
   useEffect(() => {
-    // Only trigger computer moves if the game is not loaded from a file
     if (gameState.game_type === "computer-computer" && !gameState.is_finished && !gameState.from_file) {
       const timer = setTimeout(() => {
         makeComputerMove();
@@ -39,7 +38,11 @@ function App() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(settings),
+          body: JSON.stringify({
+            ...settings,
+            initial_moves: settings.initial_moves || [],
+            from_file: Boolean(settings.initial_moves),
+          }),
         }
       );
       const data = await response.json();
@@ -59,6 +62,7 @@ function App() {
                 algorithm: settings.algorithm,
                 difficulty: settings.difficulty,
                 is_from_file: true,
+                skip_computer_move: true, // Add this flag to prevent computer moves
               }),
             }
           );
@@ -69,7 +73,7 @@ function App() {
           ...currentState,
           ...settings,
           lastMoveTime: Date.now(),
-          from_file: settings.from_file,
+          from_file: true,
         });
       } else {
         setGameState({
@@ -77,7 +81,7 @@ function App() {
           ...data,
           ...settings,
           lastMoveTime: Date.now(),
-          from_file: settings.from_file,
+          from_file: false,
         });
       }
       setIsSetupOpen(false);
@@ -100,6 +104,7 @@ function App() {
             column: null,
             algorithm: gameState.algorithm,
             difficulty: gameState.difficulty,
+            skip_computer_move: gameState.from_file,
           }),
         }
       );
@@ -131,6 +136,7 @@ function App() {
             column,
             algorithm: gameState.algorithm,
             difficulty: gameState.difficulty,
+            skip_computer_move: gameState.from_file,
           }),
         }
       );
@@ -144,7 +150,7 @@ function App() {
         moveCalculationTime: endTime - startTime,
       }));
 
-      // Only make computer move if not from file
+      // Only make computer move if not from file and game isn't finished
       if (gameState.game_type === 'human-computer' && !gameState.from_file && !data.is_finished) {
         await makeComputerMove();
       }
