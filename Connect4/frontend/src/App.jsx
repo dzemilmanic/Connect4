@@ -46,44 +46,13 @@ function App() {
         }
       );
       const data = await response.json();
-      
-      // If there are initial moves, apply them sequentially
-      if (settings.initial_moves && settings.initial_moves.length > 0) {
-        let currentState = data;
-        for (let i = 0; i < settings.initial_moves.length; i++) {
-          const column = settings.initial_moves[i];
-          const moveResponse = await fetch(
-            `https://desirable-nourishment-production.up.railway.app/api/algorithms/${currentState.id}/make_move/`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                column,
-                algorithm: settings.algorithm,
-                difficulty: settings.difficulty,
-                is_from_file: true,
-                skip_computer_move: true,
-              }),
-            }
-          );
-          currentState = await moveResponse.json();
-          if (currentState.is_finished) break;
-        }
-        setGameState({
-          ...currentState,
-          ...settings,
-          lastMoveTime: Date.now(),
-          from_file: true,
-        });
-      } else {
-        setGameState({
-          ...INITIAL_GAME_STATE,
-          ...data,
-          ...settings,
-          lastMoveTime: Date.now(),
-          from_file: false,
-        });
-      }
+      setGameState({
+        ...INITIAL_GAME_STATE,
+        ...data,
+        ...settings,
+        lastMoveTime: Date.now(),
+        from_file: Boolean(settings.initial_moves),
+      });
       setIsSetupOpen(false);
     } catch (error) {
       console.error("Error starting game:", error);
