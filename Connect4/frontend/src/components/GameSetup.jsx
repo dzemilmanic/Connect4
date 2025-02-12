@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
-import { User, Cpu, Brain } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { User, Cpu, Brain, Upload } from 'lucide-react';
 
 function GameSetup({ onStart }) {
   const [gameType, setGameType] = useState('');
   const [difficulty, setDifficulty] = useState('medium');
   const [algorithm, setAlgorithm] = useState('minimax');
+  const [initialMoves, setInitialMoves] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result;
+        const moves = content.trim().split(/\s+/).map(Number);
+        setInitialMoves(moves);
+      };
+      reader.readAsText(file);
+    }
+  };
 
   const handleStart = () => {
     const settings = {
@@ -12,6 +27,9 @@ function GameSetup({ onStart }) {
       ...(gameType !== 'human-human' && {
         difficulty,
         algorithm,
+      }),
+      ...(initialMoves && {
+        initial_moves: initialMoves,
       }),
     };
     onStart(settings);
@@ -95,6 +113,34 @@ function GameSetup({ onStart }) {
           </div>
         </>
       )}
+
+      <div className="setup-section">
+        <h3 className="setup-title">Initial Game State (Optional)</h3>
+        <div className="file-input-container">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".txt"
+            style={{ display: 'none' }}
+          />
+          <button
+            className="setup-button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{ width: '100%' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              <Upload size={20} />
+              {initialMoves ? 'File loaded' : 'Load moves from file'}
+            </div>
+          </button>
+          {initialMoves && (
+            <div className="mt-2 text-sm text-gray-600">
+              Loaded {initialMoves.length} moves
+            </div>
+          )}
+        </div>
+      </div>
 
       <button
         className={`button ${gameType ? 'button-blue' : ''}`}

@@ -41,12 +41,39 @@ function App() {
         }
       );
       const data = await response.json();
-      setGameState({
-        ...INITIAL_GAME_STATE,
-        ...data,
-        ...settings,
-        lastMoveTime: Date.now(),
-      });
+      
+      // If there are initial moves, apply them sequentially
+      if (settings.initial_moves && settings.initial_moves.length > 0) {
+        let currentState = data;
+        for (const column of settings.initial_moves) {
+          const moveResponse = await fetch(
+            `https://desirable-nourishment-production.up.railway.app/api/algorithms/${currentState.id}/make_move/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                column,
+                algorithm: settings.algorithm,
+                difficulty: settings.difficulty,
+              }),
+            }
+          );
+          currentState = await moveResponse.json();
+          if (currentState.is_finished) break;
+        }
+        setGameState({
+          ...currentState,
+          ...settings,
+          lastMoveTime: Date.now(),
+        });
+      } else {
+        setGameState({
+          ...INITIAL_GAME_STATE,
+          ...data,
+          ...settings,
+          lastMoveTime: Date.now(),
+        });
+      }
       setIsSetupOpen(false);
     } catch (error) {
       console.error("Error starting game:", error);
