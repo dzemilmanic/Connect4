@@ -16,6 +16,7 @@ const INITIAL_GAME_STATE = {
   lastMoveTime: null,
   moveCalculationTime: 0,
   from_file: false,
+  initialLoadComplete: false,
 };
 
 function App() {
@@ -23,7 +24,8 @@ function App() {
   const [isSetupOpen, setIsSetupOpen] = useState(true);
 
   useEffect(() => {
-    if (gameState.game_type === "computer-computer" && !gameState.is_finished && !gameState.from_file) {
+    if (gameState.game_type === "computer-computer" && !gameState.is_finished && 
+        (!gameState.from_file || gameState.initialLoadComplete)) {
       const timer = setTimeout(() => {
         makeComputerMove();
       }, 1000);
@@ -46,21 +48,32 @@ function App() {
         }
       );
       const data = await response.json();
+      
+      const hasInitialMoves = Boolean(settings.initial_moves);
       setGameState({
         ...INITIAL_GAME_STATE,
         ...data,
         ...settings,
         lastMoveTime: Date.now(),
-        from_file: Boolean(settings.initial_moves),
+        from_file: hasInitialMoves,
+        initialLoadComplete: hasInitialMoves,
       });
       setIsSetupOpen(false);
+
+      // If it's a computer vs computer game and we loaded from file,
+      // trigger the first computer move after a delay
+      if (settings.game_type === 'computer-computer' && hasInitialMoves && !data.is_finished) {
+        setTimeout(() => {
+          makeComputerMove();
+        }, 1000);
+      }
     } catch (error) {
       console.error("Error starting game:", error);
     }
   };
 
   const makeComputerMove = async () => {
-    if (!gameState.id || gameState.is_finished || gameState.from_file) return;
+    if (!gameState.id || gameState.is_finished) return;
 
     const startTime = Date.now();
     try {
@@ -73,7 +86,7 @@ function App() {
             column: null,
             algorithm: gameState.algorithm,
             difficulty: gameState.difficulty,
-            skip_computer_move: gameState.from_file,
+            skip_computer_move: false, // Never skip computer moves after initial load
           }),
         }
       );
@@ -85,6 +98,7 @@ function App() {
         ...data,
         lastMoveTime: endTime,
         moveCalculationTime: endTime - startTime,
+        initialLoadComplete: true,
       }));
     } catch (error) {
       console.error("Error making move:", error);
@@ -105,7 +119,7 @@ function App() {
             column,
             algorithm: gameState.algorithm,
             difficulty: gameState.difficulty,
-            skip_computer_move: gameState.from_file,
+            skip_computer_move: false, // Never skip computer moves after initial load
           }),
         }
       );
@@ -117,10 +131,11 @@ function App() {
         ...data,
         lastMoveTime: endTime,
         moveCalculationTime: endTime - startTime,
+        initialLoadComplete: true,
       }));
 
-      // Only make computer move if not from file and game isn't finished
-      if (gameState.game_type === 'human-computer' && !gameState.from_file && !data.is_finished) {
+      // Only make computer move if game isn't finished
+      if (gameState.game_type === 'human-computer' && !data.is_finished) {
         await makeComputerMove();
       }
     } catch (error) {
