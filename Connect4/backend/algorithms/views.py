@@ -33,8 +33,8 @@ class GameViewSet(viewsets.ModelViewSet):
                     if game.is_finished:
                         break
 
-            # Only make first computer move if no initial moves were provided
-            elif game.game_type == 'computer-computer':
+            # Only make first computer move if no initial moves were provided and not from file
+            elif game.game_type == 'computer-computer' and not request.data.get('from_file', False):
                 algorithm = request.data.get('algorithm', 'minimax')
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
@@ -53,6 +53,7 @@ class GameViewSet(viewsets.ModelViewSet):
         column = request.data.get('column')
         algorithm = request.data.get('algorithm', 'minimax')
         from_file = request.data.get('is_from_file', False)
+        skip_computer_move = request.data.get('skip_computer_move', False)
         
         if game.game_type == 'computer-computer':
             # For computer vs computer with file moves
@@ -60,8 +61,8 @@ class GameViewSet(viewsets.ModelViewSet):
                 if not self.is_valid_move(game.board_state, column):
                     return Response({"error": "Invalid move from file"}, status=status.HTTP_400_BAD_REQUEST)
                 self.apply_move(game, column, from_file=True)
-            # Only calculate computer move if not from file
-            elif not from_file:
+            # Only calculate computer move if not from file and not skipping computer moves
+            elif not from_file and not skip_computer_move:
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 column = agent.get_chosen_column(game.board_state)
                 if column is not None:
@@ -74,8 +75,8 @@ class GameViewSet(viewsets.ModelViewSet):
             # Apply the move (either human's move or move from file)
             self.apply_move(game, column, from_file=from_file)
             
-            # Only make computer move if not reading from file and game isn't finished
-            if not game.is_finished and not from_file:
+            # Only make computer move if not reading from file and not skipping computer moves
+            if not game.is_finished and not from_file and not skip_computer_move:
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
                 if computer_move is not None:
@@ -107,24 +108,26 @@ class GameViewSet(viewsets.ModelViewSet):
 
     def apply_move(self, game, column, from_file=False):
         board = game.board_state
+        current_player = game.current_player  # Store current player before making move
+        
         for row in range(5, -1, -1):
             if board[row][column] == 0:
-                board[row][column] = game.current_player
+                board[row][column] = current_player
                 break
 
         game.board_state = board
 
         # Check for win or draw
-        is_win, winning_cells = self.check_win(board, game.current_player)
+        is_win, winning_cells = self.check_win(board, current_player)
         if is_win:
             game.is_finished = True
-            game.winner = game.current_player
+            game.winner = current_player
             game.winning_cells = winning_cells
         elif self.is_board_full(board):
             game.is_finished = True
             game.winning_cells = []
         else:
-            game.current_player = 3 - game.current_player
+            game.current_player = 3 - current_player
 
         game.save()
 
@@ -132,12 +135,12 @@ class GameViewSet(viewsets.ModelViewSet):
         GameMove.objects.create(
             game=game,
             column=column,
-            player=game.current_player
+            player=current_player
         )
         
         # Only record to file if not reading from file
         if not from_file:
-            self.record_move_to_file(game.id, column, game.current_player)
+            self.record_move_to_file(game.id, column, current_player)
 
     def record_move_to_file(self, game_id, column, player):
         move_record = f"Game ID: {game_id}, Player: {player}, Column: {column}, Time: {datetime.datetime.now()}\n"
