@@ -32,12 +32,9 @@ class GameViewSet(viewsets.ModelViewSet):
                     self.apply_move(game, move, from_file=True)
                     if game.is_finished:
                         break
-                
-                # Don't make any additional moves after loading from file
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
             # Only make first computer move if no initial moves were provided
-            if game.game_type == 'computer-computer':
+            elif game.game_type == 'computer-computer':
                 algorithm = request.data.get('algorithm', 'minimax')
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
@@ -58,13 +55,13 @@ class GameViewSet(viewsets.ModelViewSet):
         from_file = request.data.get('is_from_file', False)
         
         if game.game_type == 'computer-computer':
+            # For computer vs computer with file moves
             if from_file and column is not None:
-                # For computer vs computer, use moves directly from file
                 if not self.is_valid_move(game.board_state, column):
                     return Response({"error": "Invalid move from file"}, status=status.HTTP_400_BAD_REQUEST)
                 self.apply_move(game, column, from_file=True)
-            else:
-                # Calculate computer move if not from file
+            # Only calculate computer move if not from file
+            elif not from_file:
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 column = agent.get_chosen_column(game.board_state)
                 if column is not None:
@@ -74,10 +71,10 @@ class GameViewSet(viewsets.ModelViewSet):
             if not self.is_valid_move(game.board_state, column):
                 return Response({"error": "Invalid move"}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Apply human move
+            # Apply the move (either human's move or move from file)
             self.apply_move(game, column, from_file=from_file)
             
-            # Make computer move if game isn't finished and not reading from file
+            # Only make computer move if not reading from file and game isn't finished
             if not game.is_finished and not from_file:
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
