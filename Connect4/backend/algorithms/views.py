@@ -6,7 +6,6 @@ from .serializers import GameSerializer, GameMoveSerializer
 from .agents import MinimaxABAgent, NegascoutAgent
 import datetime
 
-
 class GameViewSet(viewsets.ModelViewSet):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
@@ -20,8 +19,35 @@ class GameViewSet(viewsets.ModelViewSet):
             serializer.validated_data['winning_cells'] = []
             game = serializer.save()
 
-            # If it's computer vs computer, make the first move
-            if game.game_type == 'computer-computer':
+            # Apply initial moves if provided
+            initial_moves = request.data.get('initial_moves', [])
+            if initial_moves:
+                for i, move in enumerate(initial_moves):
+                    if not self.is_valid_move(game.board_state, move):
+                        game.delete()
+                        return Response(
+                            {"error": f"Invalid move {move} in initial moves"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    # For computer-computer, use moves directly from file
+                    if game.game_type == 'computer-computer':
+                        self.apply_move(game, move, from_file=True)
+                    # For human-computer, alternate between file move and computer move
+                    elif game.game_type == 'human-computer':
+                        if i % 2 == 0:  # Human moves from file
+                            self.apply_move(game, move, from_file=True)
+                            if game.is_finished:
+                                break
+                            # Calculate computer's response
+                            if i + 1 < len(initial_moves):
+                                next_move = initial_moves[i + 1]
+                                if self.is_valid_move(game.board_state, next_move):
+                                    self.apply_move(game, next_move, from_file=True)
+                    if game.is_finished:
+                        break
+
+            # If it's computer vs computer and game not finished, make first move
+            if not game.is_finished and game.game_type == 'computer-computer' and not initial_moves:
                 algorithm = request.data.get('algorithm', 'minimax')
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
@@ -39,33 +65,46 @@ class GameViewSet(viewsets.ModelViewSet):
 
         column = request.data.get('column')
         algorithm = request.data.get('algorithm', 'minimax')
+        from_file = request.data.get('is_from_file', False)
         
         if game.game_type == 'computer-computer':
-            # For computer vs computer, always calculate the move
-            agent = self.get_computer_agent(algorithm, game.difficulty)
-            column = agent.get_chosen_column(game.board_state)
-            
-            if column is not None:
-                self.apply_move(game, column)
+            if from_file and column is not None:
+                # For computer vs computer, use moves directly from file
+                if not self.is_valid_move(game.board_state, column):
+                    return Response({"error": "Invalid move from file"}, status=status.HTTP_400_BAD_REQUEST)
+                self.apply_move(game, column, from_file=True)
+            else:
+                # Calculate computer move if not from file
+                agent = self.get_computer_agent(algorithm, game.difficulty)
+                column = agent.get_chosen_column(game.board_state)
+                if column is not None:
+                    self.apply_move(game, column)
             
         elif game.game_type == 'human-computer':
-            # For human vs computer, first apply human move then computer move
             if not self.is_valid_move(game.board_state, column):
                 return Response({"error": "Invalid move"}, status=status.HTTP_400_BAD_REQUEST)
             
-            self.apply_move(game, column)
+            # Apply human move (from file or user input)
+            self.apply_move(game, column, from_file=from_file)
             
             # Make computer move if game isn't finished
             if not game.is_finished:
-                agent = self.get_computer_agent(algorithm, game.difficulty)
-                computer_move = agent.get_chosen_column(game.board_state)
-                if computer_move is not None:
-                    self.apply_move(game, computer_move)
+                if from_file and request.data.get('next_move') is not None:
+                    # Use next move from file for computer
+                    next_move = request.data.get('next_move')
+                    if self.is_valid_move(game.board_state, next_move):
+                        self.apply_move(game, next_move, from_file=True)
+                else:
+                    # Calculate computer move
+                    agent = self.get_computer_agent(algorithm, game.difficulty)
+                    computer_move = agent.get_chosen_column(game.board_state)
+                    if computer_move is not None:
+                        self.apply_move(game, computer_move)
                     
         else:  # human vs human
             if not self.is_valid_move(game.board_state, column):
                 return Response({"error": "Invalid move"}, status=status.HTTP_400_BAD_REQUEST)
-            self.apply_move(game, column)
+            self.apply_move(game, column, from_file=from_file)
 
         serializer = self.get_serializer(game)
         return Response(serializer.data)
@@ -82,11 +121,11 @@ class GameViewSet(viewsets.ModelViewSet):
             raise ValueError('Invalid algorithm type')
 
     def is_valid_move(self, board, column):
-        if column is None or column < 0 or column >= 7:
+        if column is None or not isinstance(column, (int, float)) or column < 0 or column >= 7:
             return False
         return board[0][column] == 0
 
-    def apply_move(self, game, column):
+    def apply_move(self, game, column, from_file=False):
         board = game.board_state
         for row in range(5, -1, -1):
             if board[row][column] == 0:
@@ -109,12 +148,16 @@ class GameViewSet(viewsets.ModelViewSet):
 
         game.save()
 
+        # Record move
         GameMove.objects.create(
             game=game,
             column=column,
             player=game.current_player
         )
-        self.record_move_to_file(game.id, column, game.current_player)
+        
+        # Only record to file if not reading from file
+        if not from_file:
+            self.record_move_to_file(game.id, column, game.current_player)
 
     def record_move_to_file(self, game_id, column, player):
         move_record = f"Game ID: {game_id}, Player: {player}, Column: {column}, Time: {datetime.datetime.now()}\n"
