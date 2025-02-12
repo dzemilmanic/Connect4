@@ -22,32 +22,22 @@ class GameViewSet(viewsets.ModelViewSet):
             # Apply initial moves if provided
             initial_moves = request.data.get('initial_moves', [])
             if initial_moves:
-                for i, move in enumerate(initial_moves):
+                for move in initial_moves:
                     if not self.is_valid_move(game.board_state, move):
                         game.delete()
                         return Response(
                             {"error": f"Invalid move {move} in initial moves"},
                             status=status.HTTP_400_BAD_REQUEST
                         )
-                    # For computer-computer, use moves directly from file
-                    if game.game_type == 'computer-computer':
-                        self.apply_move(game, move, from_file=True)
-                    # For human-computer, alternate between file move and computer move
-                    elif game.game_type == 'human-computer':
-                        if i % 2 == 0:  # Human moves from file
-                            self.apply_move(game, move, from_file=True)
-                            if game.is_finished:
-                                break
-                            # Calculate computer's response
-                            if i + 1 < len(initial_moves):
-                                next_move = initial_moves[i + 1]
-                                if self.is_valid_move(game.board_state, next_move):
-                                    self.apply_move(game, next_move, from_file=True)
+                    self.apply_move(game, move, from_file=True)
                     if game.is_finished:
                         break
+                
+                # Don't make any additional moves after loading from file
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            # If it's computer vs computer and game not finished, make first move
-            if not game.is_finished and game.game_type == 'computer-computer' and not initial_moves:
+            # Only make first computer move if no initial moves were provided
+            if game.game_type == 'computer-computer':
                 algorithm = request.data.get('algorithm', 'minimax')
                 agent = self.get_computer_agent(algorithm, game.difficulty)
                 computer_move = agent.get_chosen_column(game.board_state)
@@ -84,22 +74,15 @@ class GameViewSet(viewsets.ModelViewSet):
             if not self.is_valid_move(game.board_state, column):
                 return Response({"error": "Invalid move"}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Apply human move (from file or user input)
+            # Apply human move
             self.apply_move(game, column, from_file=from_file)
             
-            # Make computer move if game isn't finished
-            if not game.is_finished:
-                if from_file and request.data.get('next_move') is not None:
-                    # Use next move from file for computer
-                    next_move = request.data.get('next_move')
-                    if self.is_valid_move(game.board_state, next_move):
-                        self.apply_move(game, next_move, from_file=True)
-                else:
-                    # Calculate computer move
-                    agent = self.get_computer_agent(algorithm, game.difficulty)
-                    computer_move = agent.get_chosen_column(game.board_state)
-                    if computer_move is not None:
-                        self.apply_move(game, computer_move)
+            # Make computer move if game isn't finished and not reading from file
+            if not game.is_finished and not from_file:
+                agent = self.get_computer_agent(algorithm, game.difficulty)
+                computer_move = agent.get_chosen_column(game.board_state)
+                if computer_move is not None:
+                    self.apply_move(game, computer_move)
                     
         else:  # human vs human
             if not self.is_valid_move(game.board_state, column):
