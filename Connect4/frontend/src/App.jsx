@@ -62,7 +62,7 @@ function App() {
                 algorithm: settings.algorithm,
                 difficulty: settings.difficulty,
                 is_from_file: true,
-                skip_computer_move: true, // Add this flag to prevent computer moves
+                skip_computer_move: true,
               }),
             }
           );
