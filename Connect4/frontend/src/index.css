@@ -139,7 +139,7 @@ body {
 
 /* Game Board */
 .game-board {
-  background-color: #1e40af;
+  background-color: rgba(255, 255, 255, 0.1);
   padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -165,15 +165,15 @@ body {
 }
 
 .cell-empty {
-  background-color: #1e3a8a;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .cell-empty:hover {
-  background-color: #2563eb;
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .cell-disabled {
-  background-color: #1e3a8a;
+  background-color: rgba(255, 255, 255, 0.1);
   cursor: not-allowed;
 }
 
