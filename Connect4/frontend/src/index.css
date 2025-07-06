@@ -139,12 +139,13 @@ body {
 
 /* Game Board */
 .game-board {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1) !important;
   padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   max-width: 100%;
   overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .board-grid {
