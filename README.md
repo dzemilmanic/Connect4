@@ -1,50 +1,57 @@
-# Connect 4 Game
+# 🎮 Connect 4 Game
 
-Connect 4 is a classic two-player strategy game where players take turns dropping their pieces into a 7x6 grid. The objective is to connect four of your pieces vertically, horizontally, or diagonally before your opponent does.
+**Connect 4** is a classic two-player strategy game where players take turns dropping their pieces into a 7x6 grid. The goal is to be the first to connect four pieces vertically, horizontally, or diagonally.
 
-This project implements Connect 4 with a **Django backend** and a **React frontend**, providing a seamless and interactive gaming experience.
+This project delivers a modern version of the game using a **Django backend** and a **React frontend**, offering a smooth and interactive gaming experience.
 
----
-
-## Features
-
-- **AI Opponent**: Challenge a computer opponent with different difficulty levels.
-- **Responsive Design**: Optimized for desktop and mobile devices.
+🔗 **Live Demo**: [connect4-game.up.railway.app](https://connect4-game.up.railway.app)
 
 ---
 
-## Tech Stack
+## 🚀 Features
 
-### Backend
-
-- **Django**: Handles the server-side logic, APIs, and database management.
-- **Django REST Framework (DRF)**: Provides RESTful APIs for communication with the frontend.
-
-### Frontend
-
-- **React**: Builds the interactive and dynamic user interface.
+- 🧠 **AI Opponent** – Play against a computer with adjustable difficulty levels.
+- 📱 **Responsive Design** – Fully optimized for desktop and mobile devices.
+- 🎮 **Real-Time Gameplay** – Seamless interaction through REST APIs.
 
 ---
 
-## Installation
+## 🛠 Tech Stack
 
-### Prerequisites
+### 🧩 Backend
 
-- Python (3.8 or higher)
-- Node.js (16 or higher)
+- **Django** – Web framework for server-side logic and game engine.
+- **Django REST Framework (DRF)** – API layer for communication with frontend.
+
+### 🎨 Frontend
+
+- **React** – Builds the dynamic and interactive user interface.
+
+---
+
+## 🧪 Installation
+
+### 🔧 Prerequisites
+
+- Python 3.8+
+- Node.js 16+
 - npm or yarn
 
-### Backend Setup
+---
 
-1. Clone the repository:
+### ⚙️ Backend Setup
 
+```bash
+git clone https://github.com/dzemilmanic/Connect4.git
+cd connect4/backend
+```
+
+1. Install dependencies (optional):
    ```bash
-   git clone https://github.com/dzemilmanic/Connect4.git
-   cd connect4/backend
+   pip install -r requirements.txt
    ```
 
 2. Apply migrations:
-
    ```bash
    python manage.py migrate
    ```
@@ -54,59 +61,50 @@ This project implements Connect 4 with a **Django backend** and a **React fronte
    python manage.py runserver
    ```
 
-### Frontend Setup
+---
 
-1. Navigate to the frontend directory:
+### 💻 Frontend Setup
 
-   ```bash
-   cd ../frontend
-   ```
+```bash
+cd ../frontend
+```
 
-2. Install dependencies:
-
+1. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Start the development server:
+2. Start the development server:
    ```bash
    npm run dev
    ```
 
-The React app will be available at `http://localhost:5173`, and the Django backend will run at `http://localhost:8000`.
+- React app runs at: `http://localhost:5173`  
+- Django API runs at: `http://localhost:8000`
 
 ---
 
-## API Endpoints
+## 🔌 API Endpoints
 
-### Game
+### 🎯 Game Logic
 
-- **POST /api/algorithms/start/**: Start a new game.
-- **POST /api/algorithms/move/**: Make a move.
-- **GET /api/algorithms/state/**: Retrieve the current game state.
-
-## Future Improvements
-
-- Add spectating mode for live games.
-- Implement advanced AI strategies.
-- Introduce game themes and customizations.
-- Add social login options (e.g., Google, Facebook).
+- `POST /api/algorithms/start/` – Start a new game.
+- `POST /api/algorithms/move/` – Submit a player or AI move.
+- `GET  /api/algorithms/state/` – Get the current game state.
 
 ---
 
-## License
+## 🌟 Future Improvements
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
----
-
-## Acknowledgments
-
-- Thanks to the open-source community for tools and libraries.
-- Inspired by the classic Connect 4 game.
+- 👁️ Spectator mode for live games
+- 🤖 Smarter AI with advanced algorithms
+- 🎨 Themes and board customization
+- 🔐 Social login (Google, Facebook, etc.)
 
 ---
 
-## Contributing
+## 📜 License
 
-Contributions are welcome! Feel free to submit issues or pull requests to improve the project.
+This project is licensed under the **MIT License**. See the `LICENSE` file for more information.
+
+---
