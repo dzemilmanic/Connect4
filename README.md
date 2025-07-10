@@ -4,7 +4,7 @@
 
 This project delivers a modern version of the game using a **Django backend** and a **React frontend**, offering a smooth and interactive gaming experience.
 
-🔗 **Live Demo**: [connect4-game.up.railway.app](https://connect4-game.up.railway.app)
+🔗 **Live Demo**: [connect4.app](https://connect4-game.up.railway.app)
 
 ---
 
